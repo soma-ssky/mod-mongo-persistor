@@ -1,20 +1,4 @@
-/*
- * Copyright 2011-2012 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package org.vertx.mods;
+package me.ssky.mods;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -43,15 +27,6 @@ import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 
-/**
- * MongoDB Persistor Bus Module
- * <p>
- * Please see the README.md for a full descrition
- * <p>
- * 
- * @author <a href="http://tfox.org">Tim Fox</a>
- * @author Thomas Risberg
- */
 public class MongoPersistor extends BusModBase implements Handler<Message<JsonObject>> {
 
 	protected String address;
@@ -191,7 +166,6 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 		DBCollection coll = db.getCollection(collection);
 		DBObject obj = jsonToDBObject(doc);
 		WriteConcern writeConcern = WriteConcern.valueOf(getOptionalStringConfig("writeConcern", ""));
-		// Backwards compatibility
 		if (writeConcern == null) {
 			writeConcern = WriteConcern.valueOf(getOptionalStringConfig("write_concern", ""));
 		}
@@ -228,7 +202,7 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 			DBCollection coll = db.getCollection(collection);
 			DBObject obj = jsonToDBObject(doc);
 			WriteConcern writeConcern = WriteConcern.valueOf(getOptionalStringConfig("writeConcern", ""));
-			// Backwards compatibility
+
 			if (writeConcern == null) {
 				writeConcern = WriteConcern.valueOf(getOptionalStringConfig("write_concern", ""));
 			}
@@ -238,12 +212,8 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 			WriteResult res = coll.save(obj, writeConcern);
 
 			if (res.getError() == null) {
-				// JsonObject reply = new JsonObject();
-				// reply.putString("_id", genID);
-				// sendOK(message, reply);
 				reply.add(new JsonObject().putString("status", "ok").putString("_id", genID));
 			} else {
-				// sendError(message, res.getError());
 				reply.add(new JsonObject().putString("status", res.getError()));
 			}
 		}
@@ -264,7 +234,6 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 		Boolean multi = message.body().getBoolean("multi", false);
 		DBCollection coll = db.getCollection(collection);
 		WriteConcern writeConcern = WriteConcern.valueOf(getOptionalStringConfig("writeConcern", ""));
-		// Backwards compatibility
 		if (writeConcern == null) {
 			writeConcern = WriteConcern.valueOf(getOptionalStringConfig("write_concern", ""));
 		}
@@ -299,7 +268,7 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 		}
 		Integer timeout = (Integer) message.body().getNumber("timeout");
 		if (timeout == null || timeout < 0) {
-			timeout = 10000; // 10 seconds
+			timeout = 10000; 
 		}
 		JsonObject matcher = getMandatoryObject("matcher", message);
 		if (matcher == null) { return; }
@@ -322,7 +291,6 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 
 	private DBObject sortObjectToDBObject(Object sortObj) {
 		if (sortObj instanceof JsonObject) {
-			// Backwards compatability and a simpler syntax for single-property sorting
 			return jsonToDBObject((JsonObject) sortObj);
 		} else if (sortObj instanceof JsonArray) {
 			JsonArray sortJsonObjects = (JsonArray) sortObj;
@@ -352,7 +320,6 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 		if (cursor.hasNext()) {
 			JsonObject reply = createBatchMessage("more-exist", results);
 
-			// If the user doesn't reply within timeout, close the cursor
 			final long timerID = vertx.setTimer(timeout, new Handler<Long>() {
 				@Override
 				public void handle(Long timerID) {
@@ -367,7 +334,6 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 				@Override
 				public void handle(Message<JsonObject> msg) {
 					vertx.cancelTimer(timerID);
-					// Get the next batch
 					sendBatch(msg, cursor, max, timeout);
 				}
 			});
@@ -442,7 +408,6 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 		DBCollection coll = db.getCollection(collection);
 		DBObject obj = jsonToDBObject(matcher);
 		WriteConcern writeConcern = WriteConcern.valueOf(getOptionalStringConfig("writeConcern", ""));
-		// Backwards compatibility
 		if (writeConcern == null) {
 			writeConcern = WriteConcern.valueOf(getOptionalStringConfig("write_concern", ""));
 		}
@@ -455,7 +420,6 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
 		JsonObject reply = new JsonObject().putNumber("number", deleted);
 		sendOK(message, reply);
 	}
-
 
 	private void getCollections(Message<JsonObject> message) {
 		JsonObject reply = new JsonObject();
